@@ -51,13 +51,33 @@ The first half of this puzzle is complete! It provides one gold star: *
  How many characters need to be processed before the first start-of-message marker is detected?
  */
 
-func charactersBeforeUniqueContiguous(count: Int, in input: String) -> Int? {
+func badPerformanceCharactersBeforeUniqueContiguous(count: Int, in input: String) -> Int? {
     input.indices.dropLast(count - 1).enumerated()
         .first { offset, index in
             Set(sequence(first: index, next: input.index(after:))
                 .prefix(count)
                 .map { input[$0] }
             ).count == count
+        }
+        .map { $0.offset + count }
+}
+
+func charactersBeforeUniqueContiguous(count: Int, in input: String) -> Int? {
+    var countedSet = input.prefix(count - 1).reduce(into: [Character: Int]()) { $0[$1, default: 0] += 1 }
+    return zip (
+        input.indices.dropLast(count - 1),
+        input.indices.dropFirst(count - 1)
+    )
+        .enumerated()
+        .first { _ , indices in
+            let start = input[indices.0]
+            let end = input[indices.1]
+            countedSet[end, default: 0] += 1
+            defer {
+                countedSet[start, default: 0] -= 1
+                if countedSet[start] == 0 { countedSet.removeValue(forKey: start) }
+            }
+            return countedSet.keys.count == count
         }
         .map { $0.offset + count }
 }
