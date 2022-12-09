@@ -710,13 +710,13 @@ func length(from input: String, length: Int) -> Int {
                 let Δy = state.rope[head].y - state.rope[tail].y
                 let moveX = Δx > 0 ? 1 : -1
                 let moveY = Δy > 0 ? 1 : -1
-                if Δy == 0 && (Δx == 2 || Δx == -2) {
+                switch (abs(Δx), abs(Δy)) {
+                case (2,0): state.rope[tail].x += moveX
+                case (0,2): state.rope[tail].y += moveY
+                case (2..., _), (_, 2...):
                     state.rope[tail].x += moveX
-                } else if Δx == 0 && (Δy == 2 || Δy == -2) {
                     state.rope[tail].y += moveY
-                } else if abs(Δx) > 1 || abs(Δy) > 1 {
-                    state.rope[tail].x += moveX
-                    state.rope[tail].y += moveY
+                default: break
                 }
             }
             state.visited.insert(state.rope[length - 1])
