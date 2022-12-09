@@ -70,10 +70,10 @@ func charactersBeforeUniqueContiguous(count: Int, in input: String) -> Int? {
     )
         .enumerated()
         .first { _ , indices in
-            let start = input[indices.0]
             let end = input[indices.1]
             countedSet[end, default: 0] += 1
             defer {
+                let start = input[indices.0]
                 countedSet[start, default: 0] -= 1
                 if countedSet[start] == 0 { countedSet.removeValue(forKey: start) }
             }
