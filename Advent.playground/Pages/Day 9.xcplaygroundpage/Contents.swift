@@ -682,7 +682,7 @@ import Foundation
  Both parts of this puzzle are complete! They provide two gold stars: **
  */
 
-func length(from input: String, length: Int) -> Int {
+func tailVisited(from input: String, length: Int) -> Set<SIMD2<Int>> {
     struct State {
         var rope: [SIMD2<Int>]
         var visited: Set<SIMD2<Int>> = [.zero]
@@ -708,22 +708,16 @@ func length(from input: String, length: Int) -> Int {
             zip(state.rope.indices, state.rope.indices.dropFirst()).forEach { head, tail in
                 let Δx = state.rope[head].x - state.rope[tail].x
                 let Δy = state.rope[head].y - state.rope[tail].y
-                let moveX = Δx > 0 ? 1 : -1
-                let moveY = Δy > 0 ? 1 : -1
-                switch (abs(Δx), abs(Δy)) {
-                case (2,0): state.rope[tail].x += moveX
-                case (0,2): state.rope[tail].y += moveY
-                case (2..., _), (_, 2...):
-                    state.rope[tail].x += moveX
-                    state.rope[tail].y += moveY
-                default: break
+                if Δx.magnitude == 2 || Δy.magnitude == 2 {
+                    state.rope[tail].x += Δx.signum()
+                    state.rope[tail].y += Δy.signum()
                 }
             }
             state.visited.insert(state.rope[length - 1])
         }
-    }.visited.count
+    }.visited
 }
-print(length(from: makeInput(), length: 2))
+print(tailVisited(from: makeInput(), length: 2).count)
 // 5619
-print(length(from: makeInput(), length: 10))
+print(tailVisited(from: makeInput(), length: 10).count)
 // 2376
