@@ -56,6 +56,7 @@ func badPerformanceCharactersBeforeUniqueContiguous(count: Int, in input: String
         .first { offset, index in
             Set(sequence(first: index, next: input.index(after:))
                 .prefix(count)
+                .lazy
                 .map { input[$0] }
             ).count == count
         }

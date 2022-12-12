@@ -107,24 +107,24 @@ import Foundation
 
 func applyMoves(to input: String, shouldReverse: Bool) -> String {
     let scanner = Scanner(string: makeInput())
+    scanner.charactersToBeSkipped = .newlines
     let columns = sequence(state: scanner) { scanner -> String? in
-        scanner.charactersToBeSkipped = .newlines
-        return scanner.scanUpToCharacters(from: .newlines).flatMap { $0 == " 1   2   3   4   5   6   7   8   9" ? nil : $0 }
+        scanner.scanUpToCharacters(from: .newlines).flatMap { $0 == " 1   2   3   4   5   6   7   8   9" ? nil : $0 }
     }
         .flatMap { line in
             line
                 .enumerated()
                 .filter { $1.unicodeScalars.first.map(CharacterSet.uppercaseLetters.contains) ?? false }
-                .reduce(into: [(Int, Character)]()) { accumulated, next in
-                    accumulated.append((column: (next.offset - 1) / 4, value: next.element))
+                .map { value in
+                    (column: (value.offset - 1) / 4, value: value.element)
                 }
         }
         .reversed()
         .reduce(into: [[Character]](repeating: [], count: 9)) { columns, box in
             columns[box.column].append(box.value)
         }
+    scanner.charactersToBeSkipped = .decimalDigits.inverted
     return sequence(state: scanner) { scanner -> (quantity: Int, from: Int, to: Int)? in
-        scanner.charactersToBeSkipped = .decimalDigits.inverted
         guard let quantity = scanner.scanInt(),
               let from = scanner.scanInt().map({ $0 - 1}),
               let to = scanner.scanInt().map({ $0 - 1}) else {
