@@ -150,49 +150,40 @@
  Both parts of this puzzle are complete! They provide two gold stars: **
  */
 
-import Foundation
-
 func total(from input: String) -> (Int, Int) {
     func compare(_ pair: (Any, Any)) -> Bool? {
         switch pair {
-        case let (lhs as Int, rhs as Int): if lhs == rhs { return nil } else { return lhs < rhs }
+        case let (lhs as Int, rhs as Int): return lhs == rhs ? nil : lhs < rhs
         case let (lhs as [Any], rhs as Int): return compare((lhs, [rhs] as [Any]))
         case let (lhs as Int, rhs as [Any]): return compare(([lhs] as [Any] , rhs))
         case let (lhs as [Any], rhs as [Any]):
             for (l, r) in zip(lhs, rhs) {
                 if let value = compare((l, r)) { return value }
             }
-            if lhs.count == rhs.count { return nil } else { return lhs.count < rhs.count }
+            return lhs.count == rhs.count ? nil : lhs.count < rhs.count
         default: return false
         }
     }
-    let arrays = Array(sequence(state: Scanner(string: input)) { scanner -> (Any, Any)? in
-        scanner.charactersToBeSkipped = .newlines
-        guard let left = scanner.scanUpToCharacters(from: .newlines)
+    var arrays = Array(sequence(state: Scanner(string: input)) { scanner -> Any? in
+        scanner.scanUpToCharacters(from: .newlines)
             .flatMap({$0.data(using: .utf8)})
-            .flatMap({try? JSONSerialization.jsonObject(with:$0)}),
-            let right = scanner.scanUpToCharacters(from: .newlines)
-            .flatMap({$0.data(using: .utf8)})
-            .flatMap({try? JSONSerialization.jsonObject(with:$0)}) else {
-            return nil
-        }
-        return (left, right)
+            .flatMap({try? JSONSerialization.jsonObject(with:$0)})
     })
-    let part1 = arrays
+    let part1 = zip(
+        arrays.indices.filter { $0.isMultiple(of: 2)}.lazy.map { arrays[$0] },
+        arrays.indices.filter { !$0.isMultiple(of: 2)}.lazy.map { arrays[$0] }
+    )
         .compactMap(compare)
         .enumerated()
         .filter { $0.1 }
         .map { $0.0 + 1 }
         .reduce(0, +)
-    var allArrays = arrays.flatMap { [$0.0, $0.1] }
-    allArrays.append([2] as Any)
-    allArrays.append([6] as Any)
-    allArrays.sort(by: { compare(($0, $1)) ?? true })
-    let part2 = allArrays.firstIndex(where: { $0 as? [Int] == [2] }).map { $0 + 1}! *
-                allArrays.firstIndex(where: { $0 as? [Int] == [6] }).map { $0 + 1}!
+    arrays.append(contentsOf: [[2] as Any, [6] as Any])
+    arrays.sort(by: { compare(($0, $1)) ?? true })
+    let part2 = arrays.firstIndex(where: { $0 as? [Int] == [2] }).map { $0 + 1}! *
+                arrays.firstIndex(where: { $0 as? [Int] == [6] }).map { $0 + 1}!
     return (part1, part2)
 }
-
 
 print(total(from: makeInput()))
 // (6395, 24921)
