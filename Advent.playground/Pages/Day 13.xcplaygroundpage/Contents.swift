@@ -171,7 +171,7 @@ func total(from input: String) -> (Int, Int) {
         guard let left = scanner.scanUpToCharacters(from: .newlines)
             .flatMap({$0.data(using: .utf8)})
             .flatMap({try? JSONSerialization.jsonObject(with:$0)}),
-              let right = scanner.scanUpToCharacters(from: .newlines)
+            let right = scanner.scanUpToCharacters(from: .newlines)
             .flatMap({$0.data(using: .utf8)})
             .flatMap({try? JSONSerialization.jsonObject(with:$0)}) else {
             return nil
@@ -189,7 +189,7 @@ func total(from input: String) -> (Int, Int) {
     allArrays.append([6] as Any)
     allArrays.sort(by: { compare(($0, $1)) ?? true })
     let part2 = allArrays.firstIndex(where: { $0 as? [Int] == [2] }).map { $0 + 1}! *
-    allArrays.firstIndex(where: { $0 as? [Int] == [6] }).map { $0 + 1}!
+                allArrays.firstIndex(where: { $0 as? [Int] == [6] }).map { $0 + 1}!
     return (part1, part2)
 }
 
