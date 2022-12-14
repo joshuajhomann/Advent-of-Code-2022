@@ -150,6 +150,8 @@
  Both parts of this puzzle are complete! They provide two gold stars: **
  */
 
+import Foundation
+
 func total(from input: String) -> (Int, Int) {
     func compare(_ pair: (Any, Any)) -> Bool? {
         switch pair {
