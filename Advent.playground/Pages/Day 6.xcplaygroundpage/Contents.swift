@@ -84,9 +84,9 @@ func charactersBeforeUniqueContiguous(count: Int, in input: String) -> Int? {
 }
 
 let Σ = charactersBeforeUniqueContiguous(count: 4, in: makeInput())
-print(Σ!)
+print(Σ)
 //1134
 
 let Σ2 = charactersBeforeUniqueContiguous(count: 14, in: makeInput())
-print(Σ2!)
+print(Σ2)
 // 2263
