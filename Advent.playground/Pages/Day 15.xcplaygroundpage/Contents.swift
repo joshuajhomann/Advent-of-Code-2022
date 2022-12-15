@@ -118,7 +118,7 @@ typealias Point = SIMD2<Int>
 private extension Point {
     func manhattan(_ other: Self) -> Int  { abs(x-other.x) + abs(y-other.y)}
 }
-func total(from string: String, target: Int) -> (Int, Int) {
+func bruteForceToal(from string: String, target: Int) -> (Int, Int) {
     let inputs = sequence(state: Scanner(string: string)) { scanner -> (sensor: Point, beacon: Point, manhattan: Int)? in
         scanner.charactersToBeSkipped = .decimalDigits.union(.init(charactersIn: "-")).inverted
         guard let x = scanner.scanInt(), let y = scanner.scanInt(), let u = scanner.scanInt(), let v = scanner.scanInt() else { return nil }
@@ -136,29 +136,59 @@ func total(from string: String, target: Int) -> (Int, Int) {
         }.map { _ in 1 } ?? 0)
     }
 
+    //Brute force only solves example and is to slow for real data set
+    let bounds = (0...4000000)
+    let beacon = bounds.lazy.flatMap { x in
+        return bounds.map { Point(x: x, y: $0)}
+    }.first { target in
+        inputs.allSatisfy { (sensor, beacon, manhattan) in
+            sensor.manhattan(target) > manhattan
+        }
+    }!
+    let total2 = bounds.upperBound * beacon.x + beacon.y
+    return (total1, total2)
+}
+
+func total(from string: String, target: Int) -> (Int, Int) {
+    let inputs = sequence(state: Scanner(string: string)) { scanner -> (sensor: Point, beacon: Point, manhattan: Int)? in
+        scanner.charactersToBeSkipped = .decimalDigits.union(.init(charactersIn: "-")).inverted
+        guard let x = scanner.scanInt(), let y = scanner.scanInt(), let u = scanner.scanInt(), let v = scanner.scanInt() else { return nil }
+        let sensor = Point(x: x, y: y)
+        let beacon = Point(x: u, y: v)
+        return (sensor: Point(x: x, y: y), beacon: Point(x: u, y: v), manhattan: sensor.manhattan(beacon))
+    }.map {$0}
+
+    let minX = inputs.lazy.map { $0.sensor.x - abs($0.manhattan - abs($0.sensor.y - target)) }.min()!
+    let maxX = inputs.lazy.map { $0.sensor.x + abs($0.manhattan - abs($0.sensor.y - target)) }.max()!
+    let maxRadius = inputs.lazy.map(\.manhattan).max()!
+    let horizontalBias = minX + maxRadius
+
+    let indexSet = inputs.reduce(into: IndexSet()) { indexSet, next in
+        let (sensor, _ , manhattan) = next
+        let Δy = abs(sensor.y - target)
+        let Δx = Δy < manhattan ? manhattan - Δy  : 0
+        if Δy <= manhattan {
+            indexSet.insert(integersIn: (horizontalBias + sensor.x - Δx ... horizontalBias + sensor.x + Δx))
+        }
+    }
+    let total1 = indexSet.count(in: horizontalBias + minX ... horizontalBias + maxX)
+
     let bounds = (0...4000000)
 
     let beacon = inputs.lazy.flatMap { (sensor, beacon, manhattan) in
-        (0...manhattan + 1).flatMap { v in
+        (0...manhattan + 1).lazy.flatMap { v in
             let u = (manhattan + 1) - v
             return [Point(x: u, y: v), Point(x: -u, y: v), Point(x: v, y: u), Point(x: v, y: -u)]
+                .lazy
                 .map { sensor &+ $0 }
+                .filter { bounds.contains($0.x) && bounds.contains($0.y) }
         }
-        .filter { bounds.contains($0.x) && bounds.contains($0.y) }
     }.first { target in
         inputs.allSatisfy { (sensor, beacon, manhattan) in
             sensor.manhattan(target) > manhattan
         }
     }!
 
-    // Brute force only solves example and is to slow for real data set
-    //    let beacon = (0...target2).lazy.flatMap { x in
-    //        return (0...target2).map { Point(x: x, y: $0)}
-    //    }.first { target in
-    //        inputs.allSatisfy { (sensor, beacon, manhattan) in
-    //            sensor.manhattan(target) > manhattan
-    //        }
-    //    }!
     let total2 = bounds.upperBound * beacon.x + beacon.y
     return (total1, total2)
 }
